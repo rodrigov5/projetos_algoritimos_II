@@ -1,13 +1,9 @@
-
 /*
     Alunos: GABRIEL DA SILVA PEREIRA Matricula 202204940044.
             RODRIGO RODRIGUES VELOSO Matricula 202104940044.
 */
 
-
-
 #include <iostream>
-
 using namespace std;
 
 enum Cor { RED, BLACK };
@@ -26,6 +22,7 @@ private:
     Node* TNULL;
 
     void rotacaoEsquerda(Node* x) {
+        cout << "Executando rotação à esquerda no nó com chave " << x->chave << endl;
         Node* y = x->direita;
         x->direita = y->esquerda;
         if (y->esquerda != TNULL) {
@@ -44,6 +41,7 @@ private:
     }
 
     void rotacaoDireita(Node* x) {
+        cout << "Executando rotação à direita no nó com chave " << x->chave << endl;
         Node* y = x->esquerda;
         x->esquerda = y->direita;
         if (y->direita != TNULL) {
@@ -62,20 +60,24 @@ private:
     }
 
     void balanceamentoInsercao(Node* k) {
+        cout << "Balanceando após inserção do nó com chave " << k->chave << endl;
         Node* u;
         while (k->pai->cor == RED) {
             if (k->pai == k->pai->pai->direita) {
                 u = k->pai->pai->esquerda;
                 if (u->cor == RED) {
+                    cout << "Caso 1: Tio é vermelho." << endl;
                     u->cor = BLACK;
                     k->pai->cor = BLACK;
                     k->pai->pai->cor = RED;
                     k = k->pai->pai;
                 } else {
                     if (k == k->pai->esquerda) {
+                        cout << "Caso 2: Nó é filho esquerdo." << endl;
                         k = k->pai;
                         rotacaoDireita(k);
                     }
+                    cout << "Caso 3: Rotação à esquerda no avô." << endl;
                     k->pai->cor = BLACK;
                     k->pai->pai->cor = RED;
                     rotacaoEsquerda(k->pai->pai);
@@ -83,15 +85,18 @@ private:
             } else {
                 u = k->pai->pai->direita;
                 if (u->cor == RED) {
+                    cout << "Caso 1: Tio é vermelho." << endl;
                     u->cor = BLACK;
                     k->pai->cor = BLACK;
                     k->pai->pai->cor = RED;
                     k = k->pai->pai;
                 } else {
                     if (k == k->pai->direita) {
+                        cout << "Caso 2: Nó é filho direito." << endl;
                         k = k->pai;
                         rotacaoEsquerda(k);
                     }
+                    cout << "Caso 3: Rotação à direita no avô." << endl;
                     k->pai->cor = BLACK;
                     k->pai->pai->cor = RED;
                     rotacaoDireita(k->pai->pai);
@@ -107,6 +112,7 @@ private:
     }
 
     void inserir(Node* k) {
+        cout << "Inserindo no com chave " << k->chave << endl;
         Node* y = nullptr;
         Node* x = raiz;
         while (x != TNULL) {
@@ -128,119 +134,15 @@ private:
         k->esquerda = TNULL;
         k->direita = TNULL;
         k->cor = RED;
+        cout << "No com chave " << k->chave << " inserido. Ajustando a arvore..." << endl;
         inserirFixup(k);
-    }
-
-    Node* minimo(Node* node) {
-        while (node->esquerda != TNULL) {
-            node = node->esquerda;
-        }
-        return node;
-    }
-
-    void transpor(Node* u, Node* v) {
-        if (u->pai == nullptr) {
-            raiz = v;
-        } else if (u == u->pai->esquerda) {
-            u->pai->esquerda = v;
-        } else {
-            u->pai->direita = v;
-        }
-        v->pai = u->pai;
-    }
-
-    void removerFixup(Node* x) {
-        Node* w;
-        while (x != raiz && x->cor == BLACK) {
-            if (x == x->pai->esquerda) {
-                w = x->pai->direita;
-                if (w->cor == RED) {
-                    w->cor = BLACK;
-                    x->pai->cor = RED;
-                    rotacaoEsquerda(x->pai);
-                    w = x->pai->direita;
-                }
-                if (w->esquerda->cor == BLACK && w->direita->cor == BLACK) {
-                    w->cor = RED;
-                    x = x->pai;
-                } else {
-                    if (w->direita->cor == BLACK) {
-                        w->esquerda->cor = BLACK;
-                        w->cor = RED;
-                        rotacaoDireita(w);
-                        w = x->pai->direita;
-                    }
-                    w->cor = x->pai->cor;
-                    x->pai->cor = BLACK;
-                    w->direita->cor = BLACK;
-                    rotacaoEsquerda(x->pai);
-                    x = raiz;
-                }
-            } else {
-                w = x->pai->esquerda;
-                if (w->cor == RED) {
-                    w->cor = BLACK;
-                    x->pai->cor = RED;
-                    rotacaoDireita(x->pai);
-                    w = x->pai->esquerda;
-                }
-                if (w->direita->cor == BLACK && w->esquerda->cor == BLACK) {
-                    w->cor = RED;
-                    x = x->pai;
-                } else {
-                    if (w->esquerda->cor == BLACK) {
-                        w->direita->cor = BLACK;
-                        w->cor = RED;
-                        rotacaoEsquerda(w);
-                        w = x->pai->esquerda;
-                    }
-                    w->cor = x->pai->cor;
-                    x->pai->cor = BLACK;
-                    w->esquerda->cor = BLACK;
-                    rotacaoDireita(x->pai);
-                    x = raiz;
-                }
-            }
-        }
-        x->cor = BLACK;
-    }
-
-    void remover(Node* z) {
-        Node* y = z;
-        Node* x;
-        Cor yOriginalColor = y->cor;
-        if (z->esquerda == TNULL) {
-            x = z->direita;
-            transpor(z, z->direita);
-        } else if (z->direita == TNULL) {
-            x = z->esquerda;
-            transpor(z, z->esquerda);
-        } else {
-            y = minimo(z->direita);
-            yOriginalColor = y->cor;
-            x = y->direita;
-            if (y->pai == z) {
-                x->pai = y;
-            } else {
-                transpor(y, y->direita);
-                y->direita = z->direita;
-                y->direita->pai = y;
-            }
-            transpor(z, y);
-            y->esquerda = z->esquerda;
-            y->esquerda->pai = y;
-            y->cor = z->cor;
-        }
-        if (yOriginalColor == BLACK) {
-            removerFixup(x);
-        }
+        cout << "Inserção do no com chave " << k->chave << " conclida!" << endl;
     }
 
     Node* procura(Node* raiz, int chave) {
         if (raiz == TNULL || raiz->chave == chave) {
             return raiz;
         }
-
         if (chave < raiz->chave) {
             return procura(raiz->esquerda, chave);
         }
@@ -248,10 +150,7 @@ private:
     }
 
     void mostraEmOrdem(Node* raiz) {
-        if (raiz == TNULL) {
-            return;
-        }
-
+        if (raiz == TNULL) return;
         mostraEmOrdem(raiz->esquerda);
         cout << raiz->chave << " ";
         mostraEmOrdem(raiz->direita);
@@ -277,27 +176,16 @@ public:
         inserir(node);
     }
 
-    void remover(int chave) {
-        Node* node = procura(raiz, chave);
-        if (node != TNULL) {
-            remover(node);
-        }
-    }
-
     void mostrar() {
         mostraEmOrdem(raiz);
         cout << endl;
-    }
-
-    bool procurar(int chave) {
-        Node* result = procura(raiz, chave);
-        return result != TNULL;
     }
 };
 
 int main() {
     ArvoreRubroNegra arvore;
 
+    cout << "Inserindo elementos na arvore..." << endl;
     arvore.inserir(10);
     arvore.inserir(20);
     arvore.inserir(30);
@@ -305,18 +193,8 @@ int main() {
     arvore.inserir(5);
     arvore.inserir(15);
 
-    cout << "Árvore em ordem: ";
+    cout << "arvore em ordem: ";
     arvore.mostrar();
-
-    arvore.remover(20);
-    cout << "Árvore após remover 20: ";
-    arvore.mostrar();
-
-    if (arvore.procurar(25)) {
-        cout << "Elemento 25 encontrado na árvore!" << endl;
-    } else {
-        cout << "Elemento 25 não encontrado na árvore." << endl;
-    }
 
     return 0;
 }
